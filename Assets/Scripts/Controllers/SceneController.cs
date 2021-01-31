@@ -96,6 +96,7 @@ namespace Controllers
                 }
                 else
                 {
+                    _messagePublisher.Publish(new GamePlayMessages.GameCompletedEvent());
                     Debug.Log("Game Complete!");
                     return;
                 }

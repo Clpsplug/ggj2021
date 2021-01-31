@@ -42,6 +42,9 @@ namespace Messaging
         public class DirectoryCompletedEvent
         { }
 
+        public class GameCompletedEvent
+        { }
+
         public class RetryRequestedEvent
         { }
     }
