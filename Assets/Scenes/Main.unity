@@ -11450,6 +11450,7 @@ MonoBehaviour:
   - JPG File
   - PNG File
   - WAV File
+  - MP4 File
   failDialogController: {fileID: 281821234}
 --- !u!1 &702730516
 GameObject:

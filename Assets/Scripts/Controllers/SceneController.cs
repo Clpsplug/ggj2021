@@ -54,6 +54,11 @@ namespace Controllers
             _messageReceiver.Receive<GamePlayMessages.RetryRequestedEvent>()
                 .Subscribe(x =>
                 {
+                    if (_currentLevelIndex >= Scene.Levels.Length)
+                    {
+                        _currentLevelIndex = 0;
+                    }
+
                     PerformSceneTransition(
                         ChangeScene(Scene.Main, new PlaySceneData(_currentLevelIndex))
                     );
