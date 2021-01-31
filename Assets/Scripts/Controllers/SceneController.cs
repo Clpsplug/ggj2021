@@ -1,5 +1,4 @@
-using System;
-using System.Linq;
+using Cysharp.Threading.Tasks;
 using Domain;
 using EntryPoints.SceneData;
 using Messaging;
@@ -13,6 +12,7 @@ namespace Controllers
     public class SceneController : Switcher
     {
         [SerializeField] private SceneUIController uiController;
+        [SerializeField] private AudioSource bgmSource;
 
         private int _bitCount = 0;
         private int _collectedBitCount = 0;
@@ -29,22 +29,26 @@ namespace Controllers
         public void Awake()
         {
             _messageReceiver.Receive<GamePlayMessages.DataBitCollectedEvent>()
-                .Subscribe(x => { Debug.Log("Data bit collected!"); });
+                .Subscribe(x => { Debug.Log("Data bit collected!"); })
+                .AddTo(this);
             _messageReceiver.Receive<GamePlayMessages.PlayerFailureEvent>()
-                .Subscribe(x =>
-                {
-                    // TODO
-                });
+                .Subscribe(x => { BgmTapeStop().Forget(Debug.LogException); })
+                .AddTo(this);
             _messageReceiver.Receive<GamePlayMessages.ReportBitCountEvent>()
-                .Subscribe(x => { _bitCount = x.BitCount; });
+                .Subscribe(x => { _bitCount = x.BitCount; })
+                .AddTo(this);
             _messageReceiver.Receive<GamePlayMessages.ReportHoldingBitCountEvent>()
                 .Subscribe(x =>
                 {
                     Debug.Log("Report received");
-                    _messagePublisher.Publish(new GamePlayMessages.DirectoryReceivedEvent());
+                    if (x.BitCount != 0)
+                    {
+                        _messagePublisher.Publish(new GamePlayMessages.DirectoryReceivedEvent());
+                    }
+
                     _collectedBitCount += x.BitCount;
                     uiController.UpdateDataBitCount(_collectedBitCount);
-                });
+                }).AddTo(this);
 
 
             _messageReceiver.Receive<GamePlayMessages.RetryRequestedEvent>()
@@ -53,7 +57,18 @@ namespace Controllers
                     PerformSceneTransition(
                         ChangeScene(Scene.Main, new PlaySceneData(_currentLevelIndex))
                     );
-                });
+                }).AddTo(this);
+        }
+
+        private async UniTask BgmTapeStop()
+        {
+            while (bgmSource.pitch > 0)
+            {
+                bgmSource.pitch -= 0.01f;
+                await UniTask.Yield();
+            }
+
+            bgmSource.Stop();
         }
 
         private void Start()

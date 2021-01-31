@@ -15,7 +15,7 @@ namespace Controllers
         private void Awake()
         {
             _messageReceiver.Receive<GamePlayMessages.DirectoryCompletedEvent>()
-                .Subscribe(x => { animator.SetTrigger(WinTrigger); });
+                .Subscribe(x => { animator.SetTrigger(WinTrigger); }).AddTo(this);
         }
     }
 }

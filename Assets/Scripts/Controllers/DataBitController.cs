@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using Messaging;
 using UniRx;
 using UnityEngine;
@@ -11,6 +12,10 @@ namespace Controllers
     [RequireComponent(typeof(Collider2D))]
     public class DataBitController : MonoBehaviour
     {
+        [SerializeField] private SpriteRenderer sRenderer;
+        [SerializeField] private AudioSource audioSource;
+        [SerializeField] private ParticleSystem collectParticle;
+        
         private bool _collected = false;
         [Inject] private IMessagePublisher _messagePublisher;
 
@@ -19,10 +24,18 @@ namespace Controllers
             if (_collected) return;
             if (other.gameObject.tag.Equals("Player"))
             {
+                sRenderer.color = new Color(1, 1, 1, 0);
+                audioSource.Play();
+                collectParticle.Play();
                 _collected = true;
                 _messagePublisher.Publish(new GamePlayMessages.DataBitCollectedEvent());
-                Destroy(gameObject);
             }
+        }
+
+        private async UniTask Destroy()
+        {
+            await UniTask.WaitWhile(() => audioSource.isPlaying);
+            Destroy(gameObject);
         }
     }
 }
